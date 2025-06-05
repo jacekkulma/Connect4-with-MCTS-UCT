@@ -4,6 +4,7 @@ import pygame
 import sys
 import math
 import external.connect4.connect4_with_ai as c4
+from mcts_interface import get_mcts_move, get_mcts_move_with_analysis
 
 BLUE = (0,0,255)
 BLACK = (0,0,0)
@@ -84,11 +85,12 @@ while not game_over:
 
 
 	# # Ask for Player 2 Input
-	if turn == AI and not game_over:				
+	if turn == AI and not game_over:
 
 		#col = random.randint(0, COLUMN_COUNT-1)
 		#col = pick_best_move(board, AI_PIECE)
-		col, minimax_score = c4.minimax(board, 5, -math.inf, math.inf, True)
+		col, stats = get_mcts_move_with_analysis(board, time_limit=5)
+		print(f"AI thinking: {stats['iterations']} iterations, {stats['win_rate']:.2f} win rate")
 
 		if c4.is_valid_location(board, col):
 			#pygame.time.wait(500)
