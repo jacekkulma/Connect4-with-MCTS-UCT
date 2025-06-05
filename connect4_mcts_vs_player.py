@@ -3,7 +3,7 @@ import random
 import pygame
 import sys
 import math
-from external.connect4.connect4_with_ai import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, minimax, draw_board
+from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, minimax, draw_board
 
 def play_game(model):
 	BLACK = (0,0,0)
