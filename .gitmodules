@@ -1,0 +1,3 @@
+[submodule "external/connect4"]
+	path = external/connect4
+	url = https://github.com/KeithGalli/Connect4-Python.git
