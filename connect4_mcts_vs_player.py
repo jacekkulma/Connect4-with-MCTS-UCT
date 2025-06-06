@@ -71,32 +71,33 @@ def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255)
 						draw_board(board, PLAYER_PIECE, AI_PIECE, screen)
 
 
-	# # Ask for Player 2 Input
-	if turn == AI and not game_over:
+		# # Ask for Player 2 Input
+		if turn == AI and not game_over:
 
-		#col = random.randint(0, COLUMN_COUNT-1)
-		#col = pick_best_move(board, AI_PIECE)
-		col, stats = model(board, time_limit=5)
-		print(f"AI thinking: {stats['iterations']} iterations, {stats['win_rate']:.2f} win rate")
+			#col = random.randint(0, COLUMN_COUNT-1)
+			#col = pick_best_move(board, AI_PIECE)
+			# col, stats = model(board, time_limit=5)
+			col = model(board, time_limit=5)
+			# print(f"AI thinking: {stats['iterations']} iterations, {stats['win_rate']:.2f} win rate")
 
-		if is_valid_location(board, col):
-			#pygame.time.wait(500)
-			row = get_next_open_row(board, col)
-			drop_piece(board, row, col, AI_PIECE)
+			if is_valid_location(board, col):
+				#pygame.time.wait(500)
+				row = get_next_open_row(board, col)
+				drop_piece(board, row, col, AI_PIECE)
 
-			if winning_move(board, AI_PIECE):
-				label = myfont.render("Player 2 wins!!", 1, yellow)
-				screen.blit(label, (40,10))
-				game_over = True
+				if winning_move(board, AI_PIECE):
+					label = myfont.render("Player 2 wins!!", 1, yellow)
+					screen.blit(label, (40,10))
+					game_over = True
 
-			print_board(board)
-			draw_board(board, PLAYER_PIECE, AI_PIECE, screen)
+				print_board(board)
+				draw_board(board, PLAYER_PIECE, AI_PIECE, screen)
 
-			turn += 1
-			turn = turn % 2
+				turn += 1
+				turn = turn % 2
 
 		if game_over:
 			pygame.time.wait(3000)
 # example
 if __name__ == "__main__":
-    play_game(get_mcts_move_with_analysis)
+    play_game(get_mcts_move)
