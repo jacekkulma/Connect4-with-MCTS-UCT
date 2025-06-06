@@ -3,22 +3,19 @@ import random
 import pygame
 import sys
 import math
-from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, minimax, draw_board
+from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, minimax, draw_board, create_screen
 
-def play_game(model):
-	BLACK = (0,0,0)
-	RED = (255,0,0)
-	YELLOW = (255,255,0)
-
-	ROW_COUNT = 6
-	COLUMN_COUNT = 7
+def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255), black=(0,0,0),
+			   red=(255,0,0), yellow=(255,255,0)):
+	width = column_count * squaresize
+	radius = int(squaresize/2 - 5)
 
 	PLAYER = 0
 	AI = 1
 
+	EMPTY = 0
 	PLAYER_PIECE = 1
 	AI_PIECE = 2
-
 
 	board = create_board()
 	print_board(board)
@@ -26,17 +23,8 @@ def play_game(model):
 
 	pygame.init()
 
-	SQUARESIZE = 100
-
-	width = COLUMN_COUNT * SQUARESIZE
-	height = (ROW_COUNT+1) * SQUARESIZE
-
-	size = (width, height)
-
-	RADIUS = int(SQUARESIZE/2 - 5)
-
-	screen = pygame.display.set_mode(size)
-	draw_board(board)
+	screen = create_screen()
+	draw_board(board, PLAYER_PIECE, AI_PIECE, screen)
 	pygame.display.update()
 
 	myfont = pygame.font.SysFont("monospace", 75)
@@ -51,27 +39,27 @@ def play_game(model):
 				sys.exit()
 
 			if event.type == pygame.MOUSEMOTION:
-				pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
+				pygame.draw.rect(screen, black, (0,0, width, squaresize))
 				posx = event.pos[0]
 				if turn == PLAYER:
-					pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2)), RADIUS)
+					pygame.draw.circle(screen, red, (posx, int(squaresize/2)), radius)
 
 			pygame.display.update()
 
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				pygame.draw.rect(screen, BLACK, (0,0, width, SQUARESIZE))
+				pygame.draw.rect(screen, black, (0,0, width, squaresize))
 				#print(event.pos)
 				# Ask for Player 1 Input
 				if turn == PLAYER:
 					posx = event.pos[0]
-					col = int(math.floor(posx/SQUARESIZE))
+					col = int(math.floor(posx/squaresize))
 
 					if is_valid_location(board, col):
 						row = get_next_open_row(board, col)
 						drop_piece(board, row, col, PLAYER_PIECE)
 
 						if winning_move(board, PLAYER_PIECE):
-							label = myfont.render("Player 1 wins!!", 1, RED)
+							label = myfont.render("Player 1 wins!!", 1, red)
 							screen.blit(label, (40,10))
 							game_over = True
 
@@ -79,7 +67,7 @@ def play_game(model):
 						turn = turn % 2
 
 						print_board(board)
-						draw_board(board)
+						draw_board(board, PLAYER_PIECE, AI_PIECE, screen)
 
 
 		# # Ask for Player 2 Input
@@ -87,7 +75,7 @@ def play_game(model):
 
 			#col = random.randint(0, COLUMN_COUNT-1)
 			#col = pick_best_move(board, AI_PIECE)
-			col, model_score = model(board, 5, -math.inf, math.inf, True)
+			col, model_score = model(board, 5, -math.inf, math.inf, False, PLAYER_PIECE, AI_PIECE, EMPTY)
 			col = int(col)
 
 			if is_valid_location(board, col):
@@ -96,12 +84,12 @@ def play_game(model):
 				drop_piece(board, row, col, AI_PIECE)
 
 				if winning_move(board, AI_PIECE):
-					label = myfont.render("Player 2 wins!!", 1, YELLOW)
+					label = myfont.render("Player 2 wins!!", 1, yellow)
 					screen.blit(label, (40,10))
 					game_over = True
 
 				print_board(board)
-				draw_board(board)
+				draw_board(board, PLAYER_PIECE, AI_PIECE, screen)
 
 				turn += 1
 				turn = turn % 2
