@@ -3,6 +3,7 @@ import random
 import os
 from connect4_model_vs_model import play_game
 from mcts_interface import get_mcts_move
+from mcts_pb_interface import get_mcts_move_progressive_bias, get_mcts_move_progressive_widening, get_mcts_move_dynamic_exploration
 from utils import get_random_move
 from itertools import combinations_with_replacement, combinations
 from collections import defaultdict
@@ -13,7 +14,10 @@ os.makedirs(output_folder, exist_ok=True)
 
 models = {
     "Random": get_random_move,
-    "Base MCTS": get_mcts_move
+    "Base MCTS": get_mcts_move,
+    "Progressive Bias": get_mcts_move_progressive_bias,
+    "Progressive Wideness": get_mcts_move_progressive_widening,
+    "Dynamic Exploration": get_mcts_move_dynamic_exploration
 }
 model_names = {v: k for k, v in models.items()}
 func_name_to_model_name = {v.__name__: k for k, v in models.items()}

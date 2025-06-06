@@ -25,7 +25,6 @@ from mcts_pb import (
     ProgressiveBiasMCTS,
     ProgressiveWideningMCTS,
     DynamicExplorationMCTS,
-    CombinedMCTS,
     EnhancedMCTSNode
 )
 import numpy as np
