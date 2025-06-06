@@ -366,14 +366,14 @@ class ProgressiveBiasMCTS:
         Enhanced get_best_move that checks for immediate wins/blocks first.
         """
         # Check for immediate winning move
-        # win_move = self.find_immediate_win_move(board_state, ai_piece)
-        # if win_move is not None:
-        #     return win_move
-        #
-        # # Check for move to block opponent's immediate win
-        # block_move = self.find_blocking_move(board_state, ai_piece)
-        # if block_move is not None:
-        #     return block_move
+        win_move = self.find_immediate_win_move(board_state, ai_piece)
+        if win_move is not None:
+            return win_move
+
+        # Check for move to block opponent's immediate win
+        block_move = self.find_blocking_move(board_state, ai_piece)
+        if block_move is not None:
+            return block_move
         """
         Executes the MCTS algorithm to find the best move for the AI.
         """
@@ -514,7 +514,44 @@ class ProgressiveWideningMCTS:
         self.pw_alpha = pw_alpha
         self.exploration_constant = exploration_constant # UCB exploration constant
 
+    def find_immediate_win_move(self, board_state, player):
+        """
+        Check if there's an immediate winning move for the given player.
+        Returns the column number of the winning move, or None if no immediate win exists.
+        """
+        for col in range(COLUMN_COUNT):
+            if board_state[ROW_COUNT - 1][col] == EMPTY:  # Column not full
+                # Simulate placing the piece
+                temp_board = board_state.copy()
+                row = self.get_next_open_row(temp_board, col)
+                if row is not None:
+                    temp_board[row][col] = player
+                    if self.is_winning_state(temp_board, player):
+                        return col
+        return None
+
+    def find_blocking_move(self, board_state, player):
+        """
+        Check if there's a move needed to block opponent's immediate win.
+        Returns the column number of the blocking move, or None if no immediate threat.
+        """
+        opponent = PLAYER_PIECE if player == AI_PIECE else AI_PIECE
+        return self.find_immediate_win_move(board_state, opponent)
+
+    # Modified get_best_move method for any of your MCTS classes:
     def get_best_move(self, board_state, ai_piece=AI_PIECE):
+        """
+        Enhanced get_best_move that checks for immediate wins/blocks first.
+        """
+        # Check for immediate winning move
+        win_move = self.find_immediate_win_move(board_state, ai_piece)
+        if win_move is not None:
+            return win_move
+
+        # Check for move to block opponent's immediate win
+        block_move = self.find_blocking_move(board_state, ai_piece)
+        if block_move is not None:
+            return block_move
         """
         Executes the MCTS algorithm to find the best move for the AI.
         """
@@ -659,7 +696,44 @@ class DynamicExplorationMCTS:
         self.initial_c = initial_exploration_constant
         self.final_c = final_exploration_constant
 
+    def find_immediate_win_move(self, board_state, player):
+        """
+        Check if there's an immediate winning move for the given player.
+        Returns the column number of the winning move, or None if no immediate win exists.
+        """
+        for col in range(COLUMN_COUNT):
+            if board_state[ROW_COUNT - 1][col] == EMPTY:  # Column not full
+                # Simulate placing the piece
+                temp_board = board_state.copy()
+                row = self.get_next_open_row(temp_board, col)
+                if row is not None:
+                    temp_board[row][col] = player
+                    if self.is_winning_state(temp_board, player):
+                        return col
+        return None
+
+    def find_blocking_move(self, board_state, player):
+        """
+        Check if there's a move needed to block opponent's immediate win.
+        Returns the column number of the blocking move, or None if no immediate threat.
+        """
+        opponent = PLAYER_PIECE if player == AI_PIECE else AI_PIECE
+        return self.find_immediate_win_move(board_state, opponent)
+
+    # Modified get_best_move method for any of your MCTS classes:
     def get_best_move(self, board_state, ai_piece=AI_PIECE):
+        """
+        Enhanced get_best_move that checks for immediate wins/blocks first.
+        """
+        # Check for immediate winning move
+        win_move = self.find_immediate_win_move(board_state, ai_piece)
+        if win_move is not None:
+            return win_move
+
+        # Check for move to block opponent's immediate win
+        block_move = self.find_blocking_move(board_state, ai_piece)
+        if block_move is not None:
+            return block_move
         """
         Executes the MCTS algorithm to find the best move for the AI,
         with a dynamically decaying exploration constant.
@@ -709,163 +783,6 @@ class DynamicExplorationMCTS:
     def simulate(self, node, ai_piece):
         board = deepcopy(node.board_state)
         current_player = node.player  # FIXED: Start with current player
-
-        while True:
-            if self.is_winning_state(board, PLAYER_PIECE):
-                return 0 if ai_piece == AI_PIECE else 1
-            elif self.is_winning_state(board, AI_PIECE):
-                return 1 if ai_piece == AI_PIECE else 0
-
-            valid_moves = self.get_valid_moves(board)
-            if not valid_moves:
-                return 0.5
-
-            col = random.choice(valid_moves)
-            row = self.get_next_open_row(board, col)
-            if row is not None:
-                board[row][col] = current_player
-
-            current_player = PLAYER_PIECE if current_player == AI_PIECE else AI_PIECE
-
-    def backpropagate(self, node, result):
-        """
-        Performs the Backpropagation phase.
-        """
-        while node is not None:
-            node.update(result)
-            node = node.parent
-
-    # Helper methods (duplicated for self-containment)
-    def is_winning_state(self, board, piece):
-        """Checks if the given piece has won on the provided board."""
-        for c in range(COLUMN_COUNT - 3):
-            for r in range(ROW_COUNT):
-                if (board[r][c] == piece and board[r][c + 1] == piece and
-                        board[r][c + 2] == piece and board[r][c + 3] == piece):
-                    return True
-        for c in range(COLUMN_COUNT):
-            for r in range(ROW_COUNT - 3):
-                if (board[r][c] == piece and board[r + 1][c] == piece and
-                        board[r + 2][c] == piece and board[r + 3][c] == piece):
-                    return True
-        for c in range(COLUMN_COUNT - 3):
-            for r in range(ROW_COUNT - 3):
-                if (board[r][c] == piece and board[r + 1][c + 1] == piece and
-                        board[r + 2][c + 2] == piece and board[r + 3][c + 3] == piece):
-                    return True
-        for c in range(COLUMN_COUNT - 3):
-            for r in range(3, ROW_COUNT):
-                if (board[r][c] == piece and board[r - 1][c + 1] == piece and
-                        board[r - 2][c + 2] == piece and board[r - 3][c + 3] == piece):
-                    return True
-        return False
-
-    def get_valid_moves(self, board):
-        """Get list of valid column indices for the provided board."""
-        valid_moves = []
-        for col in range(COLUMN_COUNT):
-            if board[ROW_COUNT - 1][col] == EMPTY:
-                valid_moves.append(col)
-        return valid_moves
-
-    def get_next_open_row(self, board, col):
-        """Find the next available row in a column for the provided board."""
-        for r in range(ROW_COUNT):
-            if board[r][col] == EMPTY:
-                return r
-        return None
-
-class CombinedMCTS:
-    """
-    Monte Carlo Tree Search (MCTS) combining:
-    1. Progressive Bias (using heuristic-driven prior probabilities)
-    2. Progressive Widening (controlling new child expansion)
-    3. Dynamic Exploration (linearly decaying UCB exploration constant)
-    """
-
-    def __init__(self, simulation_time=2.0, max_iterations=2000,
-                 bias_weight=0.1, pw_constant=2.0, pw_alpha=0.5,
-                 initial_exploration_constant=math.sqrt(2), final_exploration_constant=0.1):
-        self.simulation_time = simulation_time
-        self.max_iterations = max_iterations
-        self.bias_weight = bias_weight
-        self.pw_constant = pw_constant
-        self.pw_alpha = pw_alpha
-        self.initial_c = initial_exploration_constant
-        self.final_c = final_exploration_constant
-
-    def get_best_move(self, board_state, ai_piece=AI_PIECE):
-        """
-        Executes the combined MCTS algorithm to find the best move for the AI.
-        Integrates dynamic exploration, progressive bias, and progressive widening.
-        """
-        root = EnhancedMCTSNode(board_state, player=ai_piece)
-        root.pw_constant = self.pw_constant # Ensure root node has PW parameters
-        root.pw_alpha = self.pw_alpha
-
-        start_time = time.time()
-        iterations = 0
-
-        while (time.time() - start_time < self.simulation_time and
-               iterations < self.max_iterations):
-            elapsed_time = time.time() - start_time
-            # Calculate current exploration constant based on linear decay over time
-            total_time = self.simulation_time if self.simulation_time > 0 else 1.0
-            c_current = self.initial_c - (self.initial_c - self.final_c) * (elapsed_time / total_time)
-            c_current = max(c_current, self.final_c) # Ensure c_current does not go below final_c
-
-            # Selection and Expansion phase (combining all features)
-            node = self.select_and_expand_combined(root, c_current)
-
-            # Simulation (playout) phase
-            result = self.simulate(node, ai_piece)
-
-            # Backpropagation phase
-            self.backpropagate(node, result)
-
-            iterations += 1
-
-        if not root.children:
-            valid_moves = root.get_valid_moves()
-            return random.choice(valid_moves) if valid_moves else 0
-
-        # After search, choose the child with the most visits
-        best_child = max(root.children, key=lambda child: child.visits)
-        return best_child.action
-
-    def select_and_expand_combined(self, root, c_current):
-        """
-        Performs the Selection and Expansion phase for the Combined MCTS.
-        This method integrates progressive widening, progressive bias, and dynamic exploration.
-        """
-        node = root
-
-        while not node.is_terminal():
-            # Apply Progressive Widening logic first:
-            # If we need to expand a new child based on the PW threshold
-            if node.untried_actions and len(node.children) < node.progressive_widening_threshold():
-                action = random.choice(node.untried_actions) # Choose a new untried action
-                next_player = node.get_opponent(node.player)
-                child = node.add_child(action, next_player)
-                child.pw_constant = self.pw_constant # Pass PW params to the new child
-                child.pw_alpha = self.pw_alpha
-                return child # Return the newly expanded child for simulation
-            else:
-                # If progressive widening threshold is met or no untried actions,
-                # select from existing children using UCB1 with progressive bias and dynamic c
-                if not node.children:
-                    # This case handles nodes that are terminal or have no valid moves left
-                    # (e.g., a draw state reached before expansion of children).
-                    return node # Return current node for simulation
-                node = node.select_child_with_bias(c_current, self.bias_weight)
-        return node # Return the terminal node or a fully expanded node for simulation
-
-    def simulate(self, node, ai_piece):
-        """
-        Performs the Simulation (playout) phase with random playout.
-        """
-        board = deepcopy(node.board_state)
-        current_player = node.get_opponent(node.player)
 
         while True:
             if self.is_winning_state(board, PLAYER_PIECE):
