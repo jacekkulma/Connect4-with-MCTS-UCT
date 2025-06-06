@@ -195,6 +195,6 @@ def draw_board(board, piece1, piece2, screen, row_count=6, column_count=7, blue=
 				pygame.draw.circle(screen, yellow, (int(c*squaresize+squaresize/2), height-int(r*squaresize+squaresize/2)), radius)
 	pygame.display.update()
 
-def get_random_move(board):
+def get_random_move(board, **kwargs):
 	valid_moves = get_valid_locations(board)
 	return random.choice(valid_moves)
