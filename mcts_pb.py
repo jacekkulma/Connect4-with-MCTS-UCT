@@ -330,13 +330,50 @@ class ProgressiveBiasMCTS:
     This variant uses heuristic-driven prior probabilities to guide the search.
     """
 
-    def __init__(self, simulation_time=2.0, max_iterations=2000, bias_weight=0.1, exploration_constant=math.sqrt(2)):
+    def __init__(self, simulation_time=1.0, max_iterations=10000, bias_weight=0.1, exploration_constant=math.sqrt(2)):
         self.simulation_time = simulation_time
         self.max_iterations = max_iterations
         self.bias_weight = bias_weight
         self.exploration_constant = exploration_constant # UCB exploration constant
 
+    def find_immediate_win_move(self, board_state, player):
+        """
+        Check if there's an immediate winning move for the given player.
+        Returns the column number of the winning move, or None if no immediate win exists.
+        """
+        for col in range(COLUMN_COUNT):
+            if board_state[ROW_COUNT - 1][col] == EMPTY:  # Column not full
+                # Simulate placing the piece
+                temp_board = board_state.copy()
+                row = self.get_next_open_row(temp_board, col)
+                if row is not None:
+                    temp_board[row][col] = player
+                    if self.is_winning_state(temp_board, player):
+                        return col
+        return None
+
+    def find_blocking_move(self, board_state, player):
+        """
+        Check if there's a move needed to block opponent's immediate win.
+        Returns the column number of the blocking move, or None if no immediate threat.
+        """
+        opponent = PLAYER_PIECE if player == AI_PIECE else AI_PIECE
+        return self.find_immediate_win_move(board_state, opponent)
+
+    # Modified get_best_move method for any of your MCTS classes:
     def get_best_move(self, board_state, ai_piece=AI_PIECE):
+        """
+        Enhanced get_best_move that checks for immediate wins/blocks first.
+        """
+        # Check for immediate winning move
+        # win_move = self.find_immediate_win_move(board_state, ai_piece)
+        # if win_move is not None:
+        #     return win_move
+        #
+        # # Check for move to block opponent's immediate win
+        # block_move = self.find_blocking_move(board_state, ai_piece)
+        # if block_move is not None:
+        #     return block_move
         """
         Executes the MCTS algorithm to find the best move for the AI.
         """
