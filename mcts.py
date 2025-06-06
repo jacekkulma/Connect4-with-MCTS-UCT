@@ -127,12 +127,35 @@ class MCTSNode:
 class MCTSConnectFourAI:
     """Monte Carlo Tree Search AI for Connect Four"""
 
-    def __init__(self, simulation_time=1.0, max_iterations=1000):
+    def __init__(self, simulation_time=1.0, max_iterations=5000):
         self.simulation_time = simulation_time  # Time limit in seconds
         self.max_iterations = max_iterations  # Maximum iterations
 
     def get_best_move(self, board_state, ai_piece=AI_PIECE):
-        """Get the best move using MCTS"""
+        """Enhanced get_best_move that checks for immediate wins/blocks first"""
+
+        # Check for immediate winning move
+        for col in range(COLUMN_COUNT):
+            if board_state[ROW_COUNT - 1][col] == 0:  # Column not full
+                temp_board = board_state.copy()
+                row = self.get_next_open_row(temp_board, col)
+                if row is not None:
+                    temp_board[row][col] = ai_piece
+                    if self.is_winning_state(temp_board, ai_piece):
+                        return col
+
+        # Check for blocking opponent's win
+        opponent = PLAYER_PIECE if ai_piece == AI_PIECE else AI_PIECE
+        for col in range(COLUMN_COUNT):
+            if board_state[ROW_COUNT - 1][col] == 0:  # Column not full
+                temp_board = board_state.copy()
+                row = self.get_next_open_row(temp_board, col)
+                if row is not None:
+                    temp_board[row][col] = opponent
+                    if self.is_winning_state(temp_board, opponent):
+                        return col
+
+        # If no immediate tactical moves, use normal MCTS
         root = MCTSNode(board_state, player=ai_piece)
 
         start_time = time.time()
@@ -178,30 +201,24 @@ class MCTSConnectFourAI:
         return node
 
     def simulate(self, node, ai_piece):
-        """Simulation phase - random playout"""
-        board = node.board_state.copy()
-        current_player = node.get_opponent(node.player)
+        board = deepcopy(node.board_state)
+        current_player = node.player  # FIXED: Start with current player
 
-        # Random playout until terminal state
         while True:
-            # Check for terminal conditions
             if self.is_winning_state(board, PLAYER_PIECE):
-                return 0 if ai_piece == AI_PIECE else 1  # Player wins
+                return 0 if ai_piece == AI_PIECE else 1
             elif self.is_winning_state(board, AI_PIECE):
-                return 1 if ai_piece == AI_PIECE else 0  # AI wins
+                return 1 if ai_piece == AI_PIECE else 0
 
-            # Get valid moves
             valid_moves = self.get_valid_moves(board)
             if not valid_moves:
-                return 0.5  # Draw
+                return 0.5
 
-            # Make random move
             col = random.choice(valid_moves)
             row = self.get_next_open_row(board, col)
             if row is not None:
                 board[row][col] = current_player
 
-            # Switch players
             current_player = PLAYER_PIECE if current_player == AI_PIECE else AI_PIECE
 
     def backpropagate(self, node, result):
