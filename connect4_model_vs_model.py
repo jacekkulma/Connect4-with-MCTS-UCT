@@ -38,7 +38,8 @@ def play_game(model1, model2, console_output=True, pygame_window=False, red=(255
     while not game_over:
         # AI1 turn
         if turn == AI1 and not game_over:
-            col, model_score = model1(board, 5, -math.inf, math.inf, True, AI1_PIECE, AI2_PIECE, EMPTY)
+            # col, model_score = model1(board, 5, -math.inf, math.inf, True, AI1_PIECE, AI2_PIECE, EMPTY)
+            col = model1(board, ai_piece=AI1_PIECE, time_limit=5)
             col = int(col)
 
             if is_valid_location(board, col):
@@ -63,7 +64,8 @@ def play_game(model1, model2, console_output=True, pygame_window=False, red=(255
                 turn = turn % 2
         
         if turn == AI2 and not game_over:
-            col, model_score = model2(board, 5, -math.inf, math.inf, True, AI1_PIECE, AI2_PIECE, EMPTY)
+            # col, model_score = model2(board, 5, -math.inf, math.inf, True, AI1_PIECE, AI2_PIECE, EMPTY)
+            col = model1(board, ai_piece=AI2_PIECE, time_limit=5)
             col = int(col)
 
             if is_valid_location(board, col):

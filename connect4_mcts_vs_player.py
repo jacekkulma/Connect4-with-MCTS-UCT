@@ -3,6 +3,7 @@ import random
 import pygame
 import sys
 import math
+from mcts_interface import get_mcts_move, get_mcts_move_with_analysis
 from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, minimax, draw_board, create_screen
 
 def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255), black=(0,0,0),
@@ -71,12 +72,13 @@ def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255)
 
 
 		# # Ask for Player 2 Input
-		if turn == AI and not game_over:				
+		if turn == AI and not game_over:
 
 			#col = random.randint(0, COLUMN_COUNT-1)
 			#col = pick_best_move(board, AI_PIECE)
-			col, model_score = model(board, 5, -math.inf, math.inf, False, PLAYER_PIECE, AI_PIECE, EMPTY)
-			col = int(col)
+			# col, stats = model(board, time_limit=5)
+			col = model(board, time_limit=5)
+			# print(f"AI thinking: {stats['iterations']} iterations, {stats['win_rate']:.2f} win rate")
 
 			if is_valid_location(board, col):
 				#pygame.time.wait(500)
@@ -98,4 +100,4 @@ def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255)
 			pygame.time.wait(3000)
 # example
 if __name__ == "__main__":
-    play_game(minimax)
+    play_game(get_mcts_move)
