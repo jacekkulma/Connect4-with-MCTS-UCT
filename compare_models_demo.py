@@ -2,7 +2,7 @@ import numpy as np
 from connect4_model_vs_model import play_game
 from mcts_interface import get_mcts_move
 from mcts_pb_interface import get_mcts_move_progressive_bias, get_mcts_move_progressive_widening, get_mcts_move_dynamic_exploration
-from utils import get_random_move
+from utils import get_random_move, get_heuristic_move
 
 # get_mcts_move - basic mcts
 # get_mcts_move_progressive_bias - mcts with progressive bias
