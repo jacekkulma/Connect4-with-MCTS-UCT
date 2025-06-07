@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from run_comparison_tests import seeds
+from run_comparison_tests import seeds, models
 
 data_folder = "tests"
 game_count = len(seeds)
@@ -42,7 +42,7 @@ def main() -> None:
 
         plt.legend(wedges, labels, title="Model", loc="center left", bbox_to_anchor=(1, 0.5))
 
-        output_folder = "plots/win_rate"
+        output_folder = os.path.join("plots", "win_rate")
         os.makedirs(output_folder, exist_ok=True)
         output_path = os.path.join(output_folder, file.replace(".csv", ".png"))
 
@@ -50,32 +50,70 @@ def main() -> None:
         plt.savefig(output_path)
         plt.close()
 
-        # Avg turn chart
-        labels = df['name']
-        avg_turns = df['avg_turns']
-
-        bars = plt.bar(labels, avg_turns, color=['skyblue', 'orange'], width=0.3)
-        plt.xlabel('Model')
-        plt.ylabel('Average Turns')
-        plt.title('Average Turns per Winning Model')
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-        output_folder = "plots/avg_turns"
+        # Avg turn chart - one base model compared with all opponents
+        output_folder = os.path.join("plots", "avg_turns")
         os.makedirs(output_folder, exist_ok=True)
-        output_path = os.path.join(output_folder, file.replace(".csv", ".png"))
 
-        for bar in bars:
-            height = bar.get_height()
-            plt.text(
-                bar.get_x() + bar.get_width() / 2,
-                height,
-                f'{height:.2f}',
-                ha='center',
-                va='bottom'
-            )
+        # print(models)
+        for BASE_MODEL in models:
+            base_avg_turns = []
+            opponent_avg_turns = []
+            opponent_names = []
 
-        plt.savefig(output_path)
-        plt.close()
+            for file in os.listdir(data_folder):
+                if not file.endswith(".csv"):
+                    continue
+
+                file_path = os.path.join(data_folder, file)
+                df = pd.read_csv(file_path)
+
+                if BASE_MODEL not in df['name'].values or len(df) != 2:
+                    continue
+
+                base_row = df[df['name'] == BASE_MODEL].iloc[0]
+                opp_row = df[df['name'] != BASE_MODEL].iloc[0]
+
+                opponent_names.append(opp_row['name'])
+                base_avg_turns.append(base_row['avg_turns'])
+                opponent_avg_turns.append(opp_row['avg_turns'])
+
+            if not opponent_names:
+                return 
+
+            import numpy as np
+
+            x = np.arange(len(opponent_names))
+            width = 0.35
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            bars1 = ax.bar(x - width/2, opponent_avg_turns, width, label='Opponent', color='orange')
+            bars2 = ax.bar(x + width/2, base_avg_turns, width, label=BASE_MODEL, color='skyblue')
+
+            ax.set_xlabel('Opponent Model')
+            ax.set_ylabel('Average Turns')
+            ax.set_title(f'Avg Turns (in wins) per Model vs {BASE_MODEL}\n(lower is better)')
+            ax.set_xticks(x)
+            ax.set_xticklabels(opponent_names, rotation=45, ha='right')
+            ax.grid(axis='y', linestyle='--', alpha=0.7)
+            ax.legend()
+
+            for bars in (bars1, bars2):
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        height,
+                        f'{height:.2f}',
+                        ha='center',
+                        va='bottom'
+                    )
+
+            
+            output_path = os.path.join(output_folder, f"{BASE_MODEL}_comparison.png")
+
+            plt.tight_layout()
+            plt.savefig(output_path)
+            plt.close()
 
 
 if __name__ == "__main__":
