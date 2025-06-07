@@ -20,7 +20,7 @@ PLAYER_PIECE = 1
 AI_PIECE = 2
 
 
-def get_mcts_move(board, ai_piece=AI_PIECE, time_limit=1.0, difficulty='normal'):
+def get_mcts_move(board, ai_piece=AI_PIECE, time_limit=1.0, difficulty='normal', **kwargs):
     """
     Get the best move using Monte Carlo Tree Search.
 
@@ -63,7 +63,7 @@ def get_mcts_move(board, ai_piece=AI_PIECE, time_limit=1.0, difficulty='normal')
     return mcts_ai.get_best_move(board, ai_piece)
 
 
-def get_mcts_move_with_analysis(board, ai_piece=AI_PIECE, time_limit=2.0):
+def get_mcts_move_with_analysis(board, ai_piece=AI_PIECE, time_limit=2.0, **kwargs):
     """
     Get the best move using MCTS along with detailed analysis.
 

@@ -206,3 +206,22 @@ def is_board_full(board, column_count=7):
         if is_valid_location(board, c): # Check if any column still has space
             return False
     return True # No valid locations left, board is full
+
+def get_heuristic_move(board, piece, opponent_piece, column_count=7, **kwargs):
+	valid_locations = get_valid_locations(board, column_count)
+
+	# 1. Block enemy if 3 pieces in line
+	for col in valid_locations:
+		row = get_next_open_row(board, col)
+		temp_board = board.copy()
+		drop_piece(temp_board, row, col, opponent_piece)
+		if winning_move(temp_board, opponent_piece):
+			return col
+
+	# 2. Center otherwise
+	center = column_count // 2
+	if center in valid_locations:
+		return center
+
+	# 3. Fallback to random choice
+	return random.choice(valid_locations)
