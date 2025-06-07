@@ -2,7 +2,7 @@ import numpy as np
 import random
 import math
 import pygame
-from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, create_screen, draw_board
+from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, create_screen, draw_board, is_board_full
 
 
 # returns [AI1_moves, AI2_moves, winner]
@@ -88,6 +88,14 @@ def play_game(model1, model2, console_output=True, pygame_window=False, red=(255
 
                 turn += 1
                 turn = turn % 2
+
+        if(is_board_full(board) and not game_over):  # You would need to implement this function
+            if pygame_window:
+                label = myfont.render("It's a Draw!", 1, (0, 0, 255))  # Example color for draw
+                screen.blit(label, (40, 10))
+            game_over = True
+            winner = "Draw"  # Or any other indicator for a draw
+            winner_alg = "N/A"  # No specific algorithm won
         
         if game_over:
             if pygame_window:

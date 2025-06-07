@@ -198,3 +198,11 @@ def draw_board(board, piece1, piece2, screen, row_count=6, column_count=7, blue=
 def get_random_move(board, **kwargs):
 	valid_moves = get_valid_locations(board)
 	return random.choice(valid_moves)
+
+def is_board_full(board, column_count=7):
+    # Assuming BOARD_HEIGHT and BOARD_WIDTH are available globally or passed
+    # You might iterate through the top row to see if any spot is empty
+    for c in range(column_count):
+        if is_valid_location(board, c): # Check if any column still has space
+            return False
+    return True # No valid locations left, board is full
