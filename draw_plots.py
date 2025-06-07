@@ -1,8 +1,14 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from run_comparison_tests import seeds
 
 data_folder = "tests"
+game_count = len(seeds)
+
+def format_pct_and_count(pct, allvals):
+            absolute = int(round(pct / 100. * sum(allvals)))
+            return f"{pct:.1f}%\n({absolute})"
 
 def main() -> None:
     for file in os.listdir(data_folder):
@@ -13,13 +19,21 @@ def main() -> None:
         df = pd.read_csv(file_path)
 
         # Win rate pie chart
-        labels = df['name']
-        wins = df['wins']
+        labels = df['name'].tolist()
+        wins = df['wins'].tolist()
+
+        total_recorded_wins = sum(wins)
+        draw_count = game_count - total_recorded_wins
+
+        if draw_count > 0:
+            labels.append("Draw")
+            wins.append(draw_count)
+
         plt.figure(figsize=(9, 6))
         wedges, texts, autotexts = plt.pie(
             wins,
             labels=None,
-            autopct='%1.1f%%',
+            autopct=lambda pct: format_pct_and_count(pct, wins),
             textprops={'color':"black", 'bbox':{'facecolor':'white', 'edgecolor':'none', 'pad':2}},
             startangle=90
         )
