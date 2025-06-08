@@ -1,10 +1,13 @@
 import numpy as np
 import random
+import argparse
 import pygame
 import sys
 import math
-from mcts_interface import get_mcts_move, get_mcts_move_with_analysis
-from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, minimax, draw_board, create_screen
+from mcts_interface import get_mcts_move
+from mcts_pb_interface import get_mcts_move_progressive_bias, get_mcts_move_progressive_widening, get_mcts_move_dynamic_exploration
+from utils import create_board, drop_piece, is_valid_location, get_next_open_row, print_board, winning_move, draw_board, create_screen, get_heuristic_move, get_random_move
+from run_comparison_tests import models
 
 def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255), black=(0,0,0),
 			   red=(255,0,0), yellow=(255,255,0)):
@@ -77,7 +80,7 @@ def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255)
 			#col = random.randint(0, COLUMN_COUNT-1)
 			#col = pick_best_move(board, AI_PIECE)
 			# col, stats = model(board, time_limit=5)
-			col = model(board, time_limit=5)
+			col = model(board, ai_piece=AI_PIECE, time_limit=1, piece=AI_PIECE, opponent_piece=PLAYER_PIECE)
 			# print(f"AI thinking: {stats['iterations']} iterations, {stats['win_rate']:.2f} win rate")
 
 			if is_valid_location(board, col):
@@ -98,6 +101,23 @@ def play_game(model, row_count=6, column_count=7, squaresize=100, blue=(0,0,255)
 
 		if game_over:
 			pygame.time.wait(3000)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Play Connect4 against selected model.")
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=models.keys(),
+        default="Base MCTS",
+        help="Choose the AI model to play against."
+    )
+    return parser.parse_args()
+
 # example
+# if __name__ == "__main__":
+#     play_game(get_heuristic_move)
 if __name__ == "__main__":
-    play_game(get_mcts_move)
+	args = parse_args()
+	selected_model = models[args.model]
+	print(f"Playing against: {args.model}")
+	play_game(selected_model)
